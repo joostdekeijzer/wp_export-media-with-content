@@ -4,7 +4,7 @@
  * Plugin URI: https://dekeijzer.org/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
- * Version: 1.0
+ * Version: 0.9
  * Author URI: https://dekeijzer.org/
  * Text Domain: export-media-with-content
  */
