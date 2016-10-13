@@ -1,6 +1,6 @@
 === Export media with selected content ===
 Contributors: joostdekeijzer
-Donate link:  https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=joost@dekeijzer.org&item_name=eurofxref+WordPress+plugin&item_number=Joost+de+Keijzer&currency_code=EUR
+Donate link:  https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=joost@dekeijzer.org&item_name=Export+media+with+selected+content+WordPress+plugin&item_number=Joost+de+Keijzer&currency_code=EUR
 Tags: export, attachments
 Requires at least: 4.0
 Tested up to: 4.6.1
