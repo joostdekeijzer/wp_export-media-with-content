@@ -23,5 +23,8 @@ This plugin adds an "Export media with selected content" option. When checked, t
 
 == Changelog ==
 
+= 0.9.1 =
+* Sanitize input
+
 = 0.9 =
 * Initial release
