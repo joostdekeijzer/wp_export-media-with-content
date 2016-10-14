@@ -28,7 +28,7 @@ class dkzrExportMediaWithContent {
 
 	public function export_args( $args ) {
 		if ( $_GET['export-media-with-content'] ) {
-			$args['export-media-with-content'] = $_GET['export-media-with-content'];
+			$args['export-media-with-content'] = (int) $_GET['export-media-with-content'];
 		}
 		return $args;
 	}
