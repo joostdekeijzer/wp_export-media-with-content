@@ -21,6 +21,9 @@ This plugin adds an "Export media with selected content" option. When checked, t
 1. Upload the plugin files to the `/wp-content/plugins/export-media-with-content` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
 
+== Screenshots ==
+1. "Export media with selected content" checkbox option now available in the Export screen.
+
 == Changelog ==
 
 = 0.9.1 =
