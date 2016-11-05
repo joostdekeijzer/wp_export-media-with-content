@@ -1,52 +1,80 @@
 <?php
 /*
  * Plugin Name: Export media with selected content
- * Plugin URI: https://dekeijzer.org/
+ * Plugin URI: https://wordpress.org/plugins/export-media-with-selected-content/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
  * Version: 0.9.1
  * Author URI: https://dekeijzer.org/
- * Text Domain: export-media-with-content
+ * Text Domain: export-media-with-selected-content
  */
 
 class dkzrExportMediaWithContent {
-	public function __construct() {
-		// handle WordPress imports
-		// wp-admin/export.php line 237
-		add_action('export_filters', array($this, 'wp_export_filter'), 10, 0);
+	protected static $export_query_run = false;
+	protected static $args = array();
 
+	public function __construct() {
 		// wp-admin/export.php line 112
-		add_filter('export_args', array($this, 'export_args'), 10, 1);
+		add_filter( 'export_args', array($this, 'export_args'), 10, 1 );
+
+		// wp-admin/export.php line 237
+		add_action( 'export_filters', array($this, 'wp_export_filters'), 10000 );
 
 		// wp-admin/includes/export.php line 40
-		add_action('export_wp', array($this, 'export_wp'), 10, 1);
+		add_action( 'export_wp', array($this, 'export_wp'), 10, 1 );
+
+		// custom export_query
+		add_filter( 'export_query', array($this, 'add_attachments_to_export_query'), 10, 1 );
 	}
 
-	public function wp_export_filter() { ?>
-<p><input type="hidden" name="export-media-with-content" value="0" /><label><input type="checkbox" name="export-media-with-content" value="1" /> <?php esc_html_e( 'Export media with selected content', 'export-media-with-content' ); ?></label></p>
-<?php }
-
+/**
+ * Filter export arguments, only when an actual export is requested (`$_GET['download']` is set)
+ */
 	public function export_args( $args ) {
-		if ( $_GET['export-media-with-content'] ) {
-			$args['export-media-with-content'] = (int) $_GET['export-media-with-content'];
+		if ( isset($_GET['export-media-with-selected-content']) ) {
+			$args['export-media-with-selected-content'] = (int) $_GET['export-media-with-selected-content'];
 		}
 		return $args;
 	}
 
+/**
+ * Add custom export options
+ */
+	public function wp_export_filters() { ?>
+<p><input type="hidden" name="export-media-with-selected-content" value="0" /><label><input type="checkbox" name="export-media-with-selected-content" value="1" /> <?php esc_html_e( 'Export media with selected content', 'export-media-with-selected-content' ); ?></label></p>
+<?php }
+
+/**
+ * Add `export_query` filter
+ */
 	public function export_wp( $args ) {
-		if ( isset( $args['content'], $args['export-media-with-content'] ) && 'all' !== $args['content'] && 'attachment' !== $args['content'] && $args['export-media-with-content'] ) {
-			add_filter('query', array($this, 'export_query'), 10, 1);
-		}
+		self::$args = $args;
+
+		/**
+		 * The `export_query` filter only alters the main export query. It requires the query to be a sql string starting with 'SELECT ID FROM {$wpdb->posts} '
+		 */
+		add_filter( 'query', array($this, 'export_query_filter'), 10, 1 );
 	}
 
-	public function export_query( $query ) {
+	public function export_query_filter( $query ) {
+		global $wpdb;
+		if (
+			false === self::$export_query_run
+			&& is_string($query)
+			&& 0 === strpos( $query, "SELECT ID FROM {$wpdb->posts} " )
+		) {
+			remove_filter( 'query', array($this, 'export_query_filter'), 10 );
+			self::$export_query_run = true;
+
+			$query = apply_filters( 'export_query', $query );
+		}
+		return $query;
+	}
+
+	public function add_attachments_to_export_query( $query ) {
 		global $wpdb;
 
-		if (
-			is_string($query)
-			&& 0 === strpos($query, "SELECT ID FROM {$wpdb->posts} ")
-		) {
-			remove_filter('query', array($this, 'export_query'), 10);
+		if ( isset( self::$args['content'], self::$args['export-media-with-selected-content'] ) && 'all' !== self::$args['content'] && 'attachment' !== self::$args['content'] && self::$args['export-media-with-selected-content'] ) {
 
 			$attachments = $wpdb->get_results( "SELECT ID, guid FROM {$wpdb->posts} WHERE post_type = 'attachment'", OBJECT_K );
 			if ( empty($attachments) ) {
