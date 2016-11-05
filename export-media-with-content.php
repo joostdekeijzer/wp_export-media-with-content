@@ -128,6 +128,10 @@ class dkzrExportMediaWithContent {
 			$ids = array_unique( $ids );
 
 			if ( count($ids) > 0 ) {
+				if ( 0 === strpos($query, "SELECT ID FROM {$wpdb->posts} INNER JOIN {$wpdb->term_relationships} ") ) {
+					// replace INNER JOIN with LEFT JOIN to allow for finding the attachments.
+					$query = str_replace( "SELECT ID FROM {$wpdb->posts} INNER JOIN {$wpdb->term_relationships} ", "SELECT ID FROM {$wpdb->posts} LEFT JOIN {$wpdb->term_relationships} ", $query );
+				}
 				$query .= sprintf( " OR {$wpdb->posts}.ID IN (%s) ", implode(',', $ids) );
 			}
 		}
