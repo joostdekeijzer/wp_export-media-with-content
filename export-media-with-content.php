@@ -4,8 +4,8 @@
  * Plugin URI: https://wordpress.org/plugins/export-media-with-selected-content/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
- * Version: 1.0
- * Author URI: https://dekeijzer.org/
+ * Version: 1.1
+ * Author URI: https://dkzr.nl/
  * Text Domain: export-media-with-selected-content
  */
 
