@@ -14,13 +14,13 @@ class dkzrExportMediaWithContent {
 	protected static $args = array();
 
 	public function __construct() {
-		// wp-admin/export.php line 112
+		// wp-admin/export.php line 119
 		add_filter( 'export_args', array($this, 'export_args'), 10, 1 );
 
-		// wp-admin/export.php line 237
+		// wp-admin/export.php line 317
 		add_action( 'export_filters', array($this, 'wp_export_filters'), 10000 );
 
-		// wp-admin/includes/export.php line 40
+		// wp-admin/includes/export.php line 76
 		add_action( 'export_wp', array($this, 'export_wp'), 10, 1 );
 
 		// custom export_query
@@ -84,11 +84,17 @@ class dkzrExportMediaWithContent {
 			$ids = array();
 			$cache = array();
 
+			/**
+			 * Post thumbnails
+			 */
 			$posts = $wpdb->get_col( $query );
 			if ( $posts ) {
 				$ids = $wpdb->get_col( sprintf( "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_thumbnail_id' AND post_id IN(%s)", implode(',', $posts) ) );
 			}
 
+			/**
+			 * Media in body text (attached file: media, gallery, url's)
+			 */
 			foreach( $wpdb->get_results( sprintf( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', array_keys( $attachments ) ) ), ARRAY_A ) as $meta ) {
 				if ( isset( $attachments[ $meta['post_id'] ] ) ) {
 					$attachments[ $meta['post_id'] ]->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
@@ -110,7 +116,7 @@ class dkzrExportMediaWithContent {
 					}
 				}
 
-				
+				// urls in text
 				preg_match_all('#(href|src)\s*=\s*["\']([^"\']+)["\']#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
 					if ( isset( $cache[ $match[2] ] ) ) {
