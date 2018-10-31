@@ -76,7 +76,7 @@ class dkzrExportMediaWithContent {
 
 		if ( isset( self::$args['content'], self::$args['export-media-with-selected-content'] ) && 'all' !== self::$args['content'] && 'attachment' !== self::$args['content'] && self::$args['export-media-with-selected-content'] ) {
 
-			$attachments = $wpdb->get_results( "SELECT ID, guid FROM {$wpdb->posts} WHERE post_type = 'attachment'", OBJECT_K );
+			$attachments = $wpdb->get_results( "SELECT ID, guid, post_parent FROM {$wpdb->posts} WHERE post_type = 'attachment'", OBJECT_K );
 			if ( empty($attachments) ) {
 				return $query;
 			}
@@ -90,6 +90,15 @@ class dkzrExportMediaWithContent {
 			$posts = $wpdb->get_col( $query );
 			if ( $posts ) {
 				$ids = $wpdb->get_col( sprintf( "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_thumbnail_id' AND post_id IN(%s)", implode(',', $posts) ) );
+			}
+
+			/**
+			 * Uploaded to (post_parent)
+			 */
+			foreach ( $attachments as $id => $att ) {
+				if ( in_array( $att->post_parent, $posts ) ) {
+					$ids[] = $id;
+				}
 			}
 
 			/**
