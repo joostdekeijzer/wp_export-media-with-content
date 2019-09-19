@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/export-media-with-selected-content/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
- * Version: 1.1
+ * Version: 2.0
  * Author URI: https://dkzr.nl/
  * Text Domain: export-media-with-selected-content
  */
@@ -110,7 +110,7 @@ class dkzrExportMediaWithContent {
 				}
 			}
 
-			foreach ( $wpdb->get_col( str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[gallery |href=|src="' ) as $text ) {
+			foreach ( $wpdb->get_col( str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[gallery |<!-- wp:gallery |<!-- wp:image |href=|src="' ) as $text ) {
 				// wp-x-ID tags content
 				preg_match_all('#(wp-image-|wp-att-)(\d+)#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
@@ -122,6 +122,27 @@ class dkzrExportMediaWithContent {
 				foreach ($matches as $match) {
 					foreach( explode( ',', $match[1] ) as $id ) {
 						$ids[] = (int) $id;
+					}
+				}
+
+				/** Gutenberg support **/
+				// <!-- wp:gallery {"ids":[1,2,3]} -->
+				preg_match_all('#<!-- wp:gallery ({"ids":\[[\d,]*\]}) -->#', $text, $matches, PREG_SET_ORDER);
+				foreach ($matches as $match) {
+					$match = json_decode( $match[1] );
+					if ( isset( $match, $match->ids ) ) {
+						foreach( $match->ids as $id ) {
+							$ids[] = (int) $id;
+						}
+					}
+				}
+
+				// <!-- wp:image {"id":4} -->
+				preg_match_all('#<!-- wp:image ({"id":\d+}) -->#', $text, $matches, PREG_SET_ORDER);
+				foreach ($matches as $match) {
+					$match = json_decode( $match[1] );
+					if ( isset( $match, $match->id ) ) {
+						$ids[] = (int) $match->id;
 					}
 				}
 
@@ -167,6 +188,10 @@ class dkzrExportMediaWithContent {
 					}
 				}
 			}
+
+			$ids = array_unique( $ids );
+
+			$ids = apply_filters( 'export_query_media_ids', $ids );
 
 			$ids = array_unique( $ids );
 

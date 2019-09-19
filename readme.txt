@@ -1,10 +1,10 @@
 === Export media with selected content ===
 Contributors: joostdekeijzer
-Donate link:  https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=joost@dekeijzer.org&item_name=Export+media+with+selected+content+WordPress+plugin&item_number=Joost+de+Keijzer&currency_code=EUR
+Donate link:  https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=j@dkzr.nl&item_name=Export+media+with+selected+content+WordPress+plugin&item_number=Joost+de+Keijzer&currency_code=EUR
 Tags: export, attachments
 Requires at least: 4.0
-Tested up to: 5.0
-Stable tag: 1.1
+Tested up to: 5.2.3
+Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,10 +21,29 @@ This plugin adds an "Export media with selected content" option. When checked, t
 1. Upload the plugin files to the `/wp-content/plugins/export-media-with-content` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
 
+== Frequently Asked Questions ==
+
+= It does not seem to work? =
+This plugin hooks into the WordPress export routine and *tries* to find images related to the post (page, etc.). It does so by looking for "attached" (uploaded to) media and it searches the body of the post (the post_content) for image files.
+
+It's possible that themes or plugins use different ways of referencing media to your post. This plugin will not find those.
+
+= Can I (have somebody) extend this plugin? =
+Yes! The plugin features two filter hooks:
+* `export_query`
+* `export_query_media_ids`
+
+Please browse the code to see what they do, I guess `export_query_media_ids` is easiest to use as it requires you to just add more attachment IDs to an array.
+
 == Screenshots ==
 1. "Export media with selected content" checkbox option now available in the Export screen.
 
 == Changelog ==
+
+= 2.0 =
+* Feature: support for Gutenberg notation of images and gallery
+* Feature: added `export_query_media_ids` filter
+* Tested with WordPress 5.2.3
 
 = 1.1 =
 * Tested with WordPress 5
