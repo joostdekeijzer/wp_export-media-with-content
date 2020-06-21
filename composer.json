@@ -1,0 +1,21 @@
+{
+    "name": "dkzr/export-media-with-selected-content",
+    "keywords": [ "WordPress" ],
+    "homepage": "https://dkzr.nl/",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Joost de Keijzer",
+            "email": "j@dkzr.nl",
+            "homepage": "https://dkzr.nl"
+        }
+    ],
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=7.0",
+        "composer/installers": "~1.0"
+    },
+    "extra": {
+        "installer-name": "export-media-with-selected-content"
+    }
+}
