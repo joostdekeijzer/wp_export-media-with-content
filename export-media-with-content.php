@@ -104,19 +104,16 @@ class dkzrExportMediaWithContent {
 			/**
 			 * Media in body text (attached file: media, gallery, url's)
 			 */
-			foreach( $wpdb->get_results( sprintf( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', array_keys( $attachments ) ) ), ARRAY_A ) as $meta ) {
-				if ( isset( $attachments[ $meta['post_id'] ] ) ) {
-					$attachments[ $meta['post_id'] ]->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
-				}
-			}
+			$attachments = $this->getPostAttachmentsMeta($attachments);
+			$attachment_map = $this->getUrlToAttachmentMap($attachments);
 
-			foreach ( $wpdb->get_col( str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[gallery |<!-- wp:gallery |<!-- wp:image |href=|src="' ) as $text ) {
+    		$q = str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[gallery |<!-- wp:gallery |<!-- wp:image |href=|src="' ;
+			foreach ( $wpdb->get_col( $q ) as $text ) {
 				// wp-x-ID tags content
 				preg_match_all('#(wp-image-|wp-att-)(\d+)#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
 					$ids[] = $match[2];
 				}
-
 				// [gallery] shortcode
 				preg_match_all('#\[gallery\s+.+ids=["\']([\d\s,]*)["\'].*\]#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
@@ -124,7 +121,6 @@ class dkzrExportMediaWithContent {
 						$ids[] = (int) $id;
 					}
 				}
-
 				/** Gutenberg support **/
 				// <!-- wp:gallery {"ids":[1,2,3]} -->
 				preg_match_all('#<!-- wp:gallery ({"ids":\[[\d,]*\]}) -->#', $text, $matches, PREG_SET_ORDER);
@@ -136,7 +132,6 @@ class dkzrExportMediaWithContent {
 						}
 					}
 				}
-
 				// <!-- wp:image {"id":4} -->
 				preg_match_all('#<!-- wp:image ({"id":\d+}) -->#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
@@ -145,7 +140,6 @@ class dkzrExportMediaWithContent {
 						$ids[] = (int) $match->id;
 					}
 				}
-
 				// urls in text
 				preg_match_all('#(href|src)\s*=\s*["\']([^"\']+)["\']#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
@@ -163,32 +157,12 @@ class dkzrExportMediaWithContent {
 						$needle = $this->fullUrl( $needle );
 					}
 
-					foreach ( $attachments as $id => $att ) {
-						if ( isset( $att->_wp_attached_file ) && ($hay = $this->fullUrl( $att->_wp_attached_file )) && $hay == $needle ) {
-							$cache[ $match[2] ] = $ids[] = $id;
-							break;
-						}
-						if ( isset( $att->_wp_attachment_metadata['file'] ) && ($hay = $this->fullUrl( $att->_wp_attachment_metadata['file'] )) && $hay == $needle ) {
-							$cache[ $match[2] ] = $ids[] = $id;
-							break;
-						}
-						if ( isset( $att->_wp_attachment_metadata['file'], $att->_wp_attachment_metadata['sizes'] ) ) {
-							$base = trailingslashit( dirname( $att->_wp_attachment_metadata['file'] ) );
-							foreach( $att->_wp_attachment_metadata['sizes'] as $size ) {
-								if ( ($hay = $this->fullUrl( $base . $size['file'] )) && $hay == $needle ) {
-									$cache[ $match[2] ] = $ids[] = $id;
-									break 2;
-								}
-							}
-						}
-						if ( isset( $att->guid ) && $att->guid == $needle ) {
-							$cache[ $match[2] ] = $ids[] = $id;
-							break;
-						}
-					}
+					if (!empty($attachment_map[$needle])) {
+					    $att = $attachment_map[$needle];
+                        $cache[ $match[2] ] = $ids[] = $att->ID;
+                    }
 				}
 			}
-
 			$ids = array_unique( $ids );
 
 			$ids = apply_filters( 'export_query_media_ids', $ids );
@@ -205,6 +179,62 @@ class dkzrExportMediaWithContent {
 		}
 		return $query;
 	}
+
+    /**
+     * Load attachments in chunks - prevent from taking too much memory on big attachment lists.
+     * @param array $attachments
+     * @return array
+     */
+    protected function getPostAttachmentsMeta(array $attachments)
+    {
+        global $wpdb;
+
+        $attachment_ids = array_keys( $attachments );
+        $i = 0;
+        do {
+            $chunk = array_slice($attachment_ids, $i * 1000, 1000);
+            $chunk []= 0; // make sure that chunk is not empty
+            $q = sprintf("SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', $chunk ) );
+            foreach( $wpdb->get_results( $q, ARRAY_A ) as $meta ) {
+                if ( isset( $attachments[ $meta['post_id'] ] ) ) {
+                    $attachments[ $meta['post_id'] ]->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
+                }
+            }
+            $i++;
+        } while(sizeof($chunk) > 1);
+        return $attachments;
+    }
+
+    /**
+     * Prepare a map for all urls to attachment object.
+     * This map lets us find them quickly by url without iterating over all of them.
+     * @return array map indexed by string (attachment full url) of attachment objects
+     */
+	protected function getUrlToAttachmentMap($attachments)
+    {
+        $attachment_map = [];
+        foreach ( $attachments as $id => $att ) {
+            if ( isset( $att->_wp_attached_file ) ) {
+                $hay = $this->fullUrl( $att->_wp_attached_file );
+                $attachment_map[$hay] = $att;
+            }
+            if ( isset( $att->_wp_attachment_metadata['file'] ) ) {
+                $hay = $this->fullUrl( $att->_wp_attachment_metadata['file'] );
+                $attachment_map[$hay] = $att;
+            }
+            if ( isset( $att->_wp_attachment_metadata['file'], $att->_wp_attachment_metadata['sizes'] ) ) {
+                $base = trailingslashit( dirname( $att->_wp_attachment_metadata['file'] ) );
+                foreach( $att->_wp_attachment_metadata['sizes'] as $size ) {
+                    $hay = $this->fullUrl( $base . $size['file'] );
+                    $attachment_map[$hay] = $att;
+                }
+            }
+            if ( isset( $att->guid ) ) {
+                $attachment_map[$att->guid] = $att;
+            }
+        }
+        return $attachment_map;
+    }
 
 	protected function fullUrl( $file ) {
 		if ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) {
