@@ -4,10 +4,15 @@
  * Plugin URI: https://wordpress.org/plugins/export-media-with-selected-content/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
- * Version: 2.1
+ * Version: 2.1.1
  * Author URI: https://dkzr.nl/
+ * Requires at least: 4.5
+ * Requires PHP: 7.0
  * Text Domain: export-media-with-selected-content
  */
+
+function add_filter() {}
+function add_action() {}
 
 class dkzrExportMediaWithContent {
 	protected static $export_query_run = false;
@@ -213,7 +218,7 @@ class dkzrExportMediaWithContent {
 	 * @return array map indexed by string (attachment full url) of attachment objects
 	 */
 	protected function getUrlToAttachmentMap($attachments) {
-		$attachment_map = [];
+		$attachment_map = array();
 		foreach ( $attachments as $id => $att ) {
 			if ( isset( $att->_wp_attached_file ) ) {
 				$hay = $this->fullUrl( $att->_wp_attached_file );
