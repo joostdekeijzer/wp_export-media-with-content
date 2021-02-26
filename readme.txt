@@ -4,7 +4,7 @@ Donate link:  https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=j@dk
 Tags: export, attachments
 Requires at least: 4.5
 Tested up to: 5.6
-Stable tag: 2.0
+Stable tag: 2.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -40,6 +40,12 @@ Please browse the code to see what they do, I guess `export_query_media_ids` is 
 1. "Export media with selected content" checkbox option now available in the Export screen.
 
 == Changelog ==
+
+= 2.1 =
+* Performance: split queries & prepare attachments_map (props Albitos)
+* Feature: support for [playlist] shortcode
+* Feature: support for Gutenberg Audio and Video blocks
+* Tested with WordPress 5.6.2
 
 = 2.0 =
 * Feature: support for Gutenberg notation of images and gallery
