@@ -107,23 +107,25 @@ class dkzrExportMediaWithContent {
 			$attachments = $this->getPostAttachmentsMeta($attachments);
 			$attachment_map = $this->getUrlToAttachmentMap($attachments);
 
-    		$q = str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[gallery |<!-- wp:gallery |<!-- wp:image |href=|src="' ;
+			$q = str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[(gallery|playlist) |<!-- wp:(gallery|audio|image|video) |href=|src="' ;
 			foreach ( $wpdb->get_col( $q ) as $text ) {
 				// wp-x-ID tags content
 				preg_match_all('#(wp-image-|wp-att-)(\d+)#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
 					$ids[] = $match[2];
 				}
-				// [gallery] shortcode
-				preg_match_all('#\[gallery\s+.+ids=["\']([\d\s,]*)["\'].*\]#', $text, $matches, PREG_SET_ORDER);
+
+				// [gallery] and [playlist] shortcode
+				preg_match_all('#\[(gallery|playlist)\s+.*ids=["\']([\d\s,]*)["\'].*\]#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
-					foreach( explode( ',', $match[1] ) as $id ) {
+					foreach( explode( ',', $match[2] ) as $id ) {
 						$ids[] = (int) $id;
 					}
 				}
+
 				/** Gutenberg support **/
 				// <!-- wp:gallery {"ids":[1,2,3]} -->
-				preg_match_all('#<!-- wp:gallery ({"ids":\[[\d,]*\]}) -->#', $text, $matches, PREG_SET_ORDER);
+				preg_match_all('#<!-- wp:gallery ({.+}) -->#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
 					$match = json_decode( $match[1] );
 					if ( isset( $match, $match->ids ) ) {
@@ -132,14 +134,15 @@ class dkzrExportMediaWithContent {
 						}
 					}
 				}
-				// <!-- wp:image {"id":4} -->
-				preg_match_all('#<!-- wp:image ({"id":\d+}) -->#', $text, $matches, PREG_SET_ORDER);
+				// <!-- wp:audio {"id":6} --><!-- wp:image {"id":4} --><!-- wp:video {"id":5} -->
+				preg_match_all('#<!-- wp:(audio|image|video) ({.*}) -->#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
-					$match = json_decode( $match[1] );
+					$match = json_decode( $match[2] );
 					if ( isset( $match, $match->id ) ) {
 						$ids[] = (int) $match->id;
 					}
 				}
+
 				// urls in text
 				preg_match_all('#(href|src)\s*=\s*["\']([^"\']+)["\']#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
