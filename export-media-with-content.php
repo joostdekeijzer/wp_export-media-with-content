@@ -158,9 +158,8 @@ class dkzrExportMediaWithContent {
 					}
 
 					if (!empty($attachment_map[$needle])) {
-					    $att = $attachment_map[$needle];
-                        $cache[ $match[2] ] = $ids[] = $att->ID;
-                    }
+						$cache[ $match[2] ] = $ids[] = $attachment_map[$needle];
+					}
 				}
 			}
 			$ids = array_unique( $ids );
@@ -205,36 +204,36 @@ class dkzrExportMediaWithContent {
         return $attachments;
     }
 
-    /**
-     * Prepare a map for all urls to attachment object.
-     * This map lets us find them quickly by url without iterating over all of them.
-     * @return array map indexed by string (attachment full url) of attachment objects
-     */
-	protected function getUrlToAttachmentMap($attachments)
-    {
-        $attachment_map = [];
-        foreach ( $attachments as $id => $att ) {
-            if ( isset( $att->_wp_attached_file ) ) {
-                $hay = $this->fullUrl( $att->_wp_attached_file );
-                $attachment_map[$hay] = $att;
-            }
-            if ( isset( $att->_wp_attachment_metadata['file'] ) ) {
-                $hay = $this->fullUrl( $att->_wp_attachment_metadata['file'] );
-                $attachment_map[$hay] = $att;
-            }
-            if ( isset( $att->_wp_attachment_metadata['file'], $att->_wp_attachment_metadata['sizes'] ) ) {
-                $base = trailingslashit( dirname( $att->_wp_attachment_metadata['file'] ) );
-                foreach( $att->_wp_attachment_metadata['sizes'] as $size ) {
-                    $hay = $this->fullUrl( $base . $size['file'] );
-                    $attachment_map[$hay] = $att;
-                }
-            }
-            if ( isset( $att->guid ) ) {
-                $attachment_map[$att->guid] = $att;
-            }
-        }
-        return $attachment_map;
-    }
+	/**
+	 * Prepare a map for all urls to attachment object.
+	 * This map lets us find them quickly by url without iterating over all of them.
+	 * @return array map indexed by string (attachment full url) of attachment objects
+	 */
+	protected function getUrlToAttachmentMap($attachments) {
+		$attachment_map = [];
+		foreach ( $attachments as $id => $att ) {
+			if ( isset( $att->_wp_attached_file ) ) {
+				$hay = $this->fullUrl( $att->_wp_attached_file );
+				$attachment_map[$hay] = $att->ID;
+			}
+			if ( isset( $att->_wp_attachment_metadata['file'] ) ) {
+				$hay = $this->fullUrl( $att->_wp_attachment_metadata['file'] );
+				$attachment_map[$hay] = $att->ID;
+			}
+			if ( isset( $att->_wp_attachment_metadata['file'], $att->_wp_attachment_metadata['sizes'] ) ) {
+				$base = trailingslashit( dirname( $att->_wp_attachment_metadata['file'] ) );
+				foreach( $att->_wp_attachment_metadata['sizes'] as $size ) {
+					$hay = $this->fullUrl( $base . $size['file'] );
+					$attachment_map[$hay] = $att->ID;
+				}
+			}
+			if ( isset( $att->guid ) ) {
+				$attachment_map[$att->guid] = $att->ID;
+			}
+		}
+
+		return $attachment_map;
+	}
 
 	protected function fullUrl( $file ) {
 		if ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) {
