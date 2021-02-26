@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/export-media-with-selected-content/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
- * Version: 2.0
+ * Version: 2.1
  * Author URI: https://dkzr.nl/
  * Text Domain: export-media-with-selected-content
  */
@@ -27,9 +27,9 @@ class dkzrExportMediaWithContent {
 		add_filter( 'export_query', array($this, 'add_attachments_to_export_query'), 10, 1 );
 	}
 
-/**
- * Filter export arguments, only when an actual export is requested (`$_GET['download']` is set)
- */
+	/**
+	 * Filter export arguments, only when an actual export is requested (`$_GET['download']` is set)
+	 */
 	public function export_args( $args ) {
 		if ( isset($_GET['export-media-with-selected-content']) ) {
 			$args['export-media-with-selected-content'] = (int) $_GET['export-media-with-selected-content'];
@@ -37,16 +37,16 @@ class dkzrExportMediaWithContent {
 		return $args;
 	}
 
-/**
- * Add custom export options
- */
+	/**
+	 * Add custom export options
+	 */
 	public function wp_export_filters() { ?>
 <p><input type="hidden" name="export-media-with-selected-content" value="0" /><label><input type="checkbox" name="export-media-with-selected-content" value="1" /> <?php esc_html_e( 'Export media with selected content', 'export-media-with-selected-content' ); ?></label></p>
 <?php }
 
-/**
- * Add `export_query` filter
- */
+	/**
+	 * Add `export_query` filter
+	 */
 	public function export_wp( $args ) {
 		self::$args = $args;
 
@@ -182,30 +182,30 @@ class dkzrExportMediaWithContent {
 		return $query;
 	}
 
-    /**
-     * Load attachments in chunks - prevent from taking too much memory on big attachment lists.
-     * @param array $attachments
-     * @return array
-     */
-    protected function getPostAttachmentsMeta(array $attachments)
-    {
-        global $wpdb;
+	/**
+	 * Load attachments in chunks - prevent from taking too much memory on big attachment lists.
+	 * @param array $attachments
+	 * @return array
+	 */
+	protected function getPostAttachmentsMeta(array $attachments) {
+		global $wpdb;
 
-        $attachment_ids = array_keys( $attachments );
-        $i = 0;
-        do {
-            $chunk = array_slice($attachment_ids, $i * 1000, 1000);
-            $chunk []= 0; // make sure that chunk is not empty
-            $q = sprintf("SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', $chunk ) );
-            foreach( $wpdb->get_results( $q, ARRAY_A ) as $meta ) {
-                if ( isset( $attachments[ $meta['post_id'] ] ) ) {
-                    $attachments[ $meta['post_id'] ]->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
-                }
-            }
-            $i++;
-        } while(sizeof($chunk) > 1);
-        return $attachments;
-    }
+		$attachment_ids = array_keys( $attachments );
+		$i = 0;
+		do {
+			$chunk = array_slice($attachment_ids, $i * 1000, 1000);
+			$chunk[] = 0; // make sure that chunk is not empty
+			$q = sprintf("SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', $chunk ) );
+			foreach( $wpdb->get_results( $q, ARRAY_A ) as $meta ) {
+				if ( isset( $attachments[ $meta['post_id'] ] ) ) {
+					$attachments[ $meta['post_id'] ]->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
+				}
+			}
+			$i++;
+		} while(sizeof($chunk) > 1);
+
+		return $attachments;
+	}
 
 	/**
 	 * Prepare a map for all urls to attachment object.
