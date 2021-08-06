@@ -99,7 +99,7 @@ class dkzrExportMediaWithContent {
 			 */
 			foreach ( $attachments as $id => $att ) {
 				if ( in_array( $att->post_parent, $posts ) ) {
-					$ids[] = $id;
+					$ids[] = (int) $id;
 				}
 			}
 
@@ -114,7 +114,7 @@ class dkzrExportMediaWithContent {
 				// wp-x-ID tags content
 				preg_match_all('#(wp-image-|wp-att-)(\d+)#', $text, $matches, PREG_SET_ORDER);
 				foreach ($matches as $match) {
-					$ids[] = $match[2];
+					$ids[] = (int) $match[2];
 				}
 
 				// [gallery] and [playlist] shortcode
@@ -163,7 +163,7 @@ class dkzrExportMediaWithContent {
 					}
 
 					if (!empty($attachment_map[$needle])) {
-						$cache[ $match[2] ] = $ids[] = $attachment_map[$needle];
+						$cache[ $match[2] ] = $ids[] = (int) $attachment_map[$needle];
 					}
 				}
 			}
@@ -219,21 +219,21 @@ class dkzrExportMediaWithContent {
 		foreach ( $attachments as $id => $att ) {
 			if ( isset( $att->_wp_attached_file ) ) {
 				$hay = $this->fullUrl( $att->_wp_attached_file );
-				$attachment_map[$hay] = $att->ID;
+				$attachment_map[ $hay ] = (int) $att->ID;
 			}
 			if ( isset( $att->_wp_attachment_metadata['file'] ) ) {
 				$hay = $this->fullUrl( $att->_wp_attachment_metadata['file'] );
-				$attachment_map[$hay] = $att->ID;
+				$attachment_map[ $hay ] = (int) $att->ID;
 			}
 			if ( isset( $att->_wp_attachment_metadata['file'], $att->_wp_attachment_metadata['sizes'] ) ) {
 				$base = trailingslashit( dirname( $att->_wp_attachment_metadata['file'] ) );
 				foreach( $att->_wp_attachment_metadata['sizes'] as $size ) {
 					$hay = $this->fullUrl( $base . $size['file'] );
-					$attachment_map[$hay] = $att->ID;
+					$attachment_map[ $hay ] = (int) $att->ID;
 				}
 			}
 			if ( isset( $att->guid ) ) {
-				$attachment_map[$att->guid] = $att->ID;
+				$attachment_map[ $att->guid ] = (int) $att->ID;
 			}
 		}
 
