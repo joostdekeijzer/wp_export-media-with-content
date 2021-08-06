@@ -103,8 +103,8 @@ class dkzrExportMediaWithContent {
 			/**
 			 * Media in body text (attached file: media, gallery, url's)
 			 */
-			$attachments = $this->getPostAttachmentsMeta($attachments);
-			$attachment_map = $this->getUrlToAttachmentMap($attachments);
+			$attachments = $this->getPostAttachmentsMeta( $attachments );
+			$attachment_map = $this->getUrlToAttachmentMap( $attachments );
 
 			$q = str_replace( 'SELECT ID FROM ', 'SELECT post_content FROM ', $query ) . ' AND post_content REGEXP "((wp-image-|wp-att-)[0-9][0-9]*)|\\\[(gallery|playlist) |<!-- wp:(gallery|audio|image|video) |href=|src="' ;
 			foreach ( $wpdb->get_col( $q ) as $text ) {
@@ -186,22 +186,22 @@ class dkzrExportMediaWithContent {
 	 * @param array $attachments
 	 * @return array
 	 */
-	protected function getPostAttachmentsMeta(array $attachments) {
+	protected function getPostAttachmentsMeta( array $attachments ) {
 		global $wpdb;
 
 		$attachment_ids = array_keys( $attachments );
 		$i = 0;
 		do {
-			$chunk = array_slice($attachment_ids, $i * 1000, 1000);
+			$chunk = array_slice( $attachment_ids, $i * 1000, 1000 );
 			$chunk[] = 0; // make sure that chunk is not empty
-			$q = sprintf("SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', $chunk ) );
+			$q = sprintf( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN('_wp_attached_file', '_wp_attachment_metadata') AND post_id IN(%s)", implode( ',', $chunk ) );
 			foreach( $wpdb->get_results( $q, ARRAY_A ) as $meta ) {
 				if ( isset( $attachments[ $meta['post_id'] ] ) ) {
 					$attachments[ $meta['post_id'] ]->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
 				}
 			}
 			$i++;
-		} while(sizeof($chunk) > 1);
+		} while( sizeof( $chunk ) > 1 );
 
 		return $attachments;
 	}
@@ -211,17 +211,20 @@ class dkzrExportMediaWithContent {
 	 * This map lets us find them quickly by url without iterating over all of them.
 	 * @return array map indexed by string (attachment full url) of attachment objects
 	 */
-	protected function getUrlToAttachmentMap($attachments) {
+	protected function getUrlToAttachmentMap( $attachments ) {
 		$attachment_map = array();
+
 		foreach ( $attachments as $id => $att ) {
 			if ( isset( $att->_wp_attached_file ) ) {
 				$hay = $this->fullUrl( $att->_wp_attached_file );
 				$attachment_map[ $hay ] = (int) $att->ID;
 			}
+
 			if ( isset( $att->_wp_attachment_metadata['file'] ) ) {
 				$hay = $this->fullUrl( $att->_wp_attachment_metadata['file'] );
 				$attachment_map[ $hay ] = (int) $att->ID;
 			}
+
 			if ( isset( $att->_wp_attachment_metadata['file'], $att->_wp_attachment_metadata['sizes'] ) ) {
 				$base = trailingslashit( dirname( $att->_wp_attachment_metadata['file'] ) );
 				foreach( $att->_wp_attachment_metadata['sizes'] as $size ) {
@@ -229,6 +232,7 @@ class dkzrExportMediaWithContent {
 					$attachment_map[ $hay ] = (int) $att->ID;
 				}
 			}
+
 			if ( isset( $att->guid ) ) {
 				$attachment_map[ $att->guid ] = (int) $att->ID;
 			}
