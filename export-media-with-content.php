@@ -87,19 +87,16 @@ class dkzrExportMediaWithContent {
 			$cache = array();
 
 			/**
-			 * Post thumbnails
+			 * Post thumbnails or uploaded to (post_parent)
 			 */
 			$posts = array_filter( $wpdb->get_col( $query ) );
 			if ( $posts ) {
 				$ids = $wpdb->get_col( sprintf( "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_thumbnail_id' AND post_id IN(%s)", implode(',', $posts) ) );
-			}
 
-			/**
-			 * Uploaded to (post_parent)
-			 */
-			foreach ( $attachments as $id => $att ) {
-				if ( in_array( $att->post_parent, $posts ) ) {
-					$ids[] = (int) $id;
+				foreach ( $attachments as $id => $att ) {
+					if ( in_array( $att->post_parent, $posts ) ) {
+						$ids[] = (int) $id;
+					}
 				}
 			}
 
