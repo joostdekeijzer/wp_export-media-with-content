@@ -3,8 +3,8 @@ Contributors: joostdekeijzer
 Donate link:  https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=j@dkzr.nl&item_name=Export+media+with+selected+content+WordPress+plugin&item_number=Joost+de+Keijzer&currency_code=EUR
 Tags: export, attachments
 Requires at least: 4.5
-Tested up to: 5.6
-Stable tag: 2.1.2
+Tested up to: 5.8
+Stable tag: 2.1.3
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -40,6 +40,9 @@ Please browse the code to see what they do, I guess `export_query_media_ids` is 
 1. "Export media with selected content" checkbox option now available in the Export screen.
 
 == Changelog ==
+
+= 2.1.3 =
+* prevent sql error when ID turns out to be NULL (props donnyoexman)
 
 = 2.1.2 =
 * Stupid debug error fix
