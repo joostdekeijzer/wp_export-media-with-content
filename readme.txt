@@ -24,10 +24,17 @@ This plugin adds an "Export media with selected content" option. When checked, t
 
 == Frequently Asked Questions ==
 
-= It does not seem to work? =
+= Images seem to be missing in the export file =
 This plugin hooks into the WordPress export routine and *tries* to find images related to the post (page, etc.). It does so by looking for "attached" (uploaded to) media and it searches the body of the post (the post_content) for image files.
 
 It's possible that themes or plugins use different ways of referencing media to your post. This plugin will not find those.
+
+= The images are imported into the new site but eg. my galleries are broken =
+In eg. the Gutenberg gallery block, when you select an image size (for the gallery) the images with that size are 'hard-coded' in the html.
+
+The WordPress import routine downloads the original image of the 'export site' and re-creates the configured image sizes. When your configured image sizes differ, you might end up with broken galleries.
+
+So make sure both sites have the same image sizes configured. See the Media settings in both sites and check if themes or plugins use `add_image_size()` [reference](https://developer.wordpress.org/reference/functions/add_image_size/).
 
 = Can I (have somebody) extend this plugin? =
 Yes! The plugin features two filter hooks:
