@@ -3,7 +3,7 @@ Contributors: joostdekeijzer
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=j@dkzr.nl&item_name=Export+media+with+selected+content+WordPress+plugin&item_number=Joost+de+Keijzer&currency_code=EUR&amount=10
 Tags: export, attachments
 Requires at least: 4.5
-Tested up to: 6.3
+Tested up to: 6.8
 Stable tag: 2.1.4
 Requires PHP: 7.0
 License: GPLv2 or later
