@@ -1,7 +1,7 @@
 <?php
 /*
- * Plugin Name: Export media with selected content
- * Plugin URI: https://wordpress.org/plugins/export-media-with-selected-content/
+ * Plugin Name: Export media with selected content (by DKZR)
+ * Plugin URI: https://dkzr.nl/
  * Description: Make sure all relevant media are exported with the selected content.
  * Author: Joost de Keijzer
  * Version: 2.1.4
