@@ -4,7 +4,7 @@ Contributors: joostdekeijzer
 Donate link: https://bunq.me/jstdkzr?description=Open+Source+WordPress+plugin+support&amount=25
 Tags: export, attachments
 Requires at least: 4.5
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 2.1.4
 Requires PHP: 7.0
 License: GPLv2 or later
